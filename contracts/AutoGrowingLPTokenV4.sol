@@ -16,9 +16,9 @@ import "@uniswap/v4-core/src/types/BeforeSwapDelta.sol";
 import "@uniswap/v4-core/src/libraries/SafeCast.sol";
 import "@uniswap/v4-core/src/libraries/LPFeeLibrary.sol";
 
-// Import base hook implementation
-import "./exmples/base/BaseHook.sol";
-import "./exmples/utils/CurrencySettler.sol";
+// Import base hook implementation from official Uniswap repositories
+import "@uniswap/v4-periphery/src/utils/BaseHook.sol";
+import "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 
 /**
  * @title AutoGrowingLPTokenV4
