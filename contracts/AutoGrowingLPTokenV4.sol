@@ -96,7 +96,7 @@ contract AutoGrowingLPTokenV4 is ERC20, Ownable, BaseHook {
         
         // Set up currencies for Uniswap V4
         tokenCurrency = Currency.wrap(address(this));
-        wethCurrency = Currency.wrap(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // WETH address
+        wethCurrency = Currency.wrap(address(0)); // Native ETH is represented by the zero address in Uniswap V4
         
         // Initialize timestamp for fee collection
         lastFeeCollectionTimestamp = block.timestamp;
@@ -251,12 +251,16 @@ contract AutoGrowingLPTokenV4 is ERC20, Ownable, BaseHook {
             salt: bytes32(0) // Default salt value
         });
         
-        // Add liquidity to the pool
-        poolManager.modifyLiquidity(poolKey, params, "");
+        // Add liquidity to the pool - for native ETH in V4, we need to use settle
+        (BalanceDelta delta, ) = poolManager.modifyLiquidity(poolKey, params, "");
         
-        // Transfer ETH to the pool manager
-        (bool success, ) = address(poolManager).call{value: ethAmount}("");
-        require(success, "ETH transfer to pool manager failed");
+        // Settle ETH to the pool manager using the Currency.settle method
+        wethCurrency.settle(poolManager, address(this), ethAmount, false);
+        
+        // Take any token balance owed to us
+        if (delta.amount0() > 0) {
+            tokenCurrency.take(poolManager, address(this), uint256(uint128(delta.amount0())), false);
+        }
         
         emit LiquidityAdded(tokenAmount, ethAmount);
     }
@@ -293,8 +297,16 @@ contract AutoGrowingLPTokenV4 is ERC20, Ownable, BaseHook {
         
         emit FeesCollected(amount0, amount1);
         
-        // Use collected ETH to buy and burn tokens
-        if (amount1 > 0) { // Assuming amount1 is ETH/WETH
+        // Take any token balances owed to us
+        if (amount0 > 0) {
+            tokenCurrency.take(poolManager, address(this), amount0, false);
+        }
+        
+        // Take any ETH owed to us
+        if (amount1 > 0) {
+            wethCurrency.take(poolManager, address(this), amount1, false);
+            
+            // Use collected ETH to buy and burn tokens
             uint256 tokensToBurn = (amount1 * 10**decimals()) / contractPrice;
             
             // Burn tokens
