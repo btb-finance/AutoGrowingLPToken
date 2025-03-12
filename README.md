@@ -1,29 +1,66 @@
-# AutoGrowingLPToken for Uniswap V4
+## Foundry
 
-This project implements an innovative ERC20 token with automatic price growth and liquidity building mechanisms using Uniswap V4 hooks.
+**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
-## Key Features
+Foundry consists of:
 
-- **Automatic Price Growth**: Token price increases by 0.1% for each 1 ETH of purchase volume
-- **Self-Building Liquidity**: 50% of purchase ETH is automatically added to Uniswap V4 liquidity
-- **Fee Recycling**: Trading fees are collected and used to burn tokens, creating a deflationary mechanism
-- **Full Range Position**: All liquidity is added to a single full-range position
-- **Uniswap V4 Integration**: Leverages Uniswap V4 hooks for efficient pool interactions
+-   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
+-   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
+-   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
+-   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
 
-## How It Works
+## Documentation
 
-1. Users buy tokens directly from the contract
-2. Each purchase increases the token price according to volume
-3. Half of the ETH goes to development, half to liquidity
-4. Trading fees are periodically collected and used to burn tokens
-5. The combination of price growth, liquidity building, and token burning creates a potential value appreciation mechanism
+https://book.getfoundry.sh/
 
-## Development
+## Usage
 
-This project uses Hardhat for Ethereum development. To get started:
+### Build
 
 ```shell
-pnpm install
-pnpm hardhat compile
-pnpm hardhat test
+$ forge build
+```
+
+### Test
+
+```shell
+$ forge test
+```
+
+### Format
+
+```shell
+$ forge fmt
+```
+
+### Gas Snapshots
+
+```shell
+$ forge snapshot
+```
+
+### Anvil
+
+```shell
+$ anvil
+```
+
+### Deploy
+
+```shell
+$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```
+
+### Cast
+
+```shell
+$ cast <subcommand>
+```
+
+### Help
+
+```shell
+$ forge --help
+$ anvil --help
+$ cast --help
 ```
