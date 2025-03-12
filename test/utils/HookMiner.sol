@@ -43,6 +43,42 @@ library HookMiner {
         return (hookAddress, initCode);
     }
     
+    /// @notice Find a salt that will produce a hook address with the desired flags
+    /// @param factoryAddress The address of the CREATE2 factory
+    /// @param flags The desired flags for the hook address
+    /// @param initCode The initialization code for the hook (creation code + constructor args)
+    /// @param maxTries Maximum number of tries (0 for unlimited)
+    /// @return salt The salt that produces a valid hook address
+    /// @return hookAddress The mined hook address
+    function find(
+        address factoryAddress,
+        uint160 flags,
+        bytes memory initCode,
+        uint256 maxTries
+    ) internal pure returns (bytes32 salt, address hookAddress) {
+        bytes32 initCodeHash = keccak256(initCode);
+        
+        // Keep mining until we find a hook address with the correct flags
+        uint256 tries = 0;
+        while (maxTries == 0 || tries < maxTries) {
+            salt = bytes32(tries);
+            
+            // Calculate the hook address using CREATE2
+            hookAddress = computeAddress(factoryAddress, salt, initCodeHash);
+            
+            // Check if the hook address has the correct flags
+            if (uint160(hookAddress) & 0xFFFF == flags) {
+                // We found a valid hook address
+                return (salt, hookAddress);
+            }
+            
+            // Increment the tries and try again
+            tries++;
+        }
+        
+        revert("Could not find a valid hook address");
+    }
+    
     /// @notice Compute the address of a contract deployed using CREATE2
     /// @param deployer The address that will deploy the contract
     /// @param salt The salt used for the deployment

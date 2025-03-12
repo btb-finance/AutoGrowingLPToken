@@ -34,7 +34,8 @@ forge install
 ## Project Structure
 
 - `src/token.sol`: Main token contract implementing Uniswap V4 hooks
-- `script/DeployTokenHook.s.sol`: Deployment script for the token
+- `script/DeployBaseTestnet.sol`: Deployment script for Base Sepolia testnet
+- `script/DeployTokenHook.s.sol`: Deployment script for local testing
 - `test/utils/HookMiner.sol`: Utility for mining hook addresses with specific flags
 
 ## Local Deployment
@@ -88,49 +89,73 @@ This will:
 2. Deploy the token contract to the mined address
 3. Initialize the pool with the specified price
 
-## Testnet Deployment
+## Base Sepolia Testnet Deployment
 
-To deploy to a testnet (e.g., Sepolia), follow these steps:
+The project is already deployed on Base Sepolia testnet at address: `0x6121E72870F6a7a782Bd746A07245d90162c1440`
 
-### 1. Set Up Environment Variables
+To deploy your own instance to Base Sepolia, follow these steps:
 
-Create a `.env` file with your private key and RPC URL:
+### 1. Update Deployment Configuration
 
-```
-PRIVATE_KEY=your_private_key_here
-SEPOLIA_RPC_URL=your_sepolia_rpc_url
-ETHERSCAN_API_KEY=your_etherscan_api_key
-```
-
-Load the environment variables:
-
-```bash
-source .env
-```
-
-### 2. Update Deployment Script for Testnet
-
-Edit the `script/DeployTokenHook.s.sol` file to use your private key and the correct PoolManager address on the testnet:
+Edit the `script/DeployBaseTestnet.sol` file to set your configuration:
 
 ```solidity
-// Default private key (replace with your own or use environment variable)
-uint256 constant PRIVATE_KEY = vm.envUint("PRIVATE_KEY");
+// Configuration parameters
+string public constant TOKEN_NAME = "AutoGrowingLPToken";
+string public constant TOKEN_SYMBOL = "AGLP";
+address public constant DEV_WALLET = 0xYourDevWalletAddress; // Update with your wallet
+uint160 public constant INITIAL_SQRT_PRICE = 79228162514264337593543950336; // 1:1 price
 
-// PoolManager address on testnet (replace with the actual address)
-address public constant POOL_MANAGER_ADDRESS = 0x...; // Testnet PoolManager address
+// Base Sepolia PoolManager address (this is the correct address for Base Sepolia)
+address public constant POOL_MANAGER_ADDRESS = 0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408;
+
+// Canonical CREATE2 factory address (same on all EVM chains including Base Sepolia)
+address public constant SINGLETON_FACTORY = 0xce0042B868300000d44A59004Da54A005ffdcf9f;
+
+// Your private key - IMPORTANT: Handle this securely!
+uint256 constant PRIVATE_KEY = 0xYourPrivateKeyHere;
 ```
 
-### 3. Deploy to Testnet
+### 2. Run the Deployment Script
 
-Deploy the token to the testnet:
+We've created a convenient deployment script for Base Sepolia. Run it with:
 
 ```bash
-forge script script/DeployTokenHook.s.sol:DeployTokenHook --rpc-url $SEPOLIA_RPC_URL --broadcast --verify -vvv
+./deploy-base-sepolia.sh
 ```
 
-The `--verify` flag will attempt to verify the contract on Etherscan if you've provided an API key.
+This script:
+1. Uses the canonical CREATE2 factory to deploy with deterministic addresses
+2. Finds a salt that produces a valid hook address with the correct flags
+3. Deploys the contract using the found salt
+4. Initializes the Uniswap V4 pool
 
-## Interacting with the Token
+### 3. Verify the Contract on Base Sepolia Explorer
+
+After deployment, verify your contract with:
+
+```bash
+./verify-contract.sh
+```
+
+Make sure to update the script with:
+- Your contract address from the deployment
+- Your Base Sepolia API key
+- The correct constructor arguments
+
+## How It Works: Base Sepolia Deployment
+
+The deployment process for Base Sepolia uses a specific approach to ensure compatibility with Uniswap V4:
+
+1. **Canonical CREATE2 Factory**: We use the EIP-2470 Singleton Factory at `0xce0042B868300000d44A59004Da54A005ffdcf9f` which exists at the same address on all EVM chains.
+
+2. **Hook Address Mining**: Uniswap V4 requires hook addresses to have specific bits set in their address to indicate which hooks they implement. Our `HookMiner` utility finds a salt value that produces a valid hook address.
+
+3. **Deployment**: The contract is deployed using the CREATE2 factory with the found salt, ensuring it has the correct address format.
+
+4. **Pool Initialization**: After deployment, the script initializes the Uniswap V4 pool with the specified initial price.
+
+## Interacting with the Token on Base Sepolia
 
 After deployment, you can interact with the token using the following methods:
 
@@ -139,7 +164,7 @@ After deployment, you can interact with the token using the following methods:
 Send ETH directly to the token contract to purchase tokens:
 
 ```bash
-cast send <TOKEN_ADDRESS> --value <ETH_AMOUNT_IN_WEI> --rpc-url http://localhost:8545 --private-key <PRIVATE_KEY>
+cast send <TOKEN_ADDRESS> --value <ETH_AMOUNT_IN_WEI> --rpc-url https://sepolia.base.org --private-key <PRIVATE_KEY>
 ```
 
 ### Checking Token Price
@@ -147,7 +172,7 @@ cast send <TOKEN_ADDRESS> --value <ETH_AMOUNT_IN_WEI> --rpc-url http://localhost
 Get the current token price:
 
 ```bash
-cast call <TOKEN_ADDRESS> "getCurrentPrice()" --rpc-url http://localhost:8545
+cast call <TOKEN_ADDRESS> "getCurrentPrice()" --rpc-url https://sepolia.base.org
 ```
 
 ### Collecting Fees
@@ -155,21 +180,20 @@ cast call <TOKEN_ADDRESS> "getCurrentPrice()" --rpc-url http://localhost:8545
 Trigger fee collection and token burning:
 
 ```bash
-cast send <TOKEN_ADDRESS> "collectFeesAndBurn()" --rpc-url http://localhost:8545 --private-key <PRIVATE_KEY>
+cast send <TOKEN_ADDRESS> "collectFeesAndBurn()" --rpc-url https://sepolia.base.org --private-key <PRIVATE_KEY>
 ```
 
-## Requirements for Deployment
+## Requirements for Base Sepolia Deployment
 
-1. **Local Network**:
-   - Anvil running
-   - Foundry installed
-   - Uniswap V4 PoolManager deployed
+1. **Base Sepolia Requirements**:
+   - Private key with Base Sepolia ETH
+   - Base Sepolia RPC URL (https://sepolia.base.org)
+   - Base Sepolia API key for verification
 
-2. **Testnet**:
-   - Private key with testnet ETH
-   - RPC URL for the testnet
-   - Uniswap V4 PoolManager deployed on the testnet
-   - Etherscan API key (for verification)
+2. **Security Considerations**:
+   - Never commit your private key to Git
+   - Consider using environment variables for sensitive information
+   - Always verify your contract after deployment for transparency
 
 ## License
 

@@ -27,3 +27,13 @@ ignition/deployments/chain-31337
 *.swp
 *.swo
 .vscode/
+
+# Sensitive information
+*.private
+*private*.txt
+*secret*.txt
+*key*.txt
+*password*.txt
+
+# Deployment artifacts
+cache/
