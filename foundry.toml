@@ -1,19 +1,23 @@
 [profile.default]
 src = "src"
-out = "artifacts"
-libs = ["node_modules"]
+out = "out"
+libs = ["lib"]
+ffi = true
+fs_permissions = [{ access = "read-write", path = ".forge-snapshots/"}]
+solc_version = "0.8.26"
+evm_version = "cancun"
 remappings = [
-    "@openzeppelin/=node_modules/@openzeppelin/",
-    "@uniswap/=node_modules/@uniswap/",
-    "ds-test/=node_modules/@uniswap/v4-core/lib/solmate/lib/ds-test/",
-    "erc4626-tests/=node_modules/@uniswap/v4-core/lib/openzeppelin-contracts/lib/erc4626-tests/",
-    "forge-gas-snapshot/=node_modules/@uniswap/v4-periphery/lib/permit2/lib/forge-gas-snapshot/",
-    "forge-std/=node_modules/@uniswap/v4-core/lib/forge-std/",
-    "hardhat/=node_modules/hardhat/",
-    "openzeppelin-contracts/=node_modules/@uniswap/v4-core/lib/openzeppelin-contracts/",
-    "permit2/=node_modules/@uniswap/v4-periphery/lib/permit2/",
-    "solmate/=node_modules/@uniswap/v4-core/lib/solmate/",
-    "v4-core/=node_modules/@uniswap/v4-periphery/lib/v4-core/",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/",
+    "v4-core/=lib/v4-core/",
+    "v4-periphery/=lib/v4-periphery/",
+    "@uniswap/v4-core/=lib/v4-core/",
+    "solmate/=lib/v4-core/lib/solmate/",
+    "permit2/=lib/v4-periphery/lib/permit2/",
+    "uniswap-hooks/=lib/uniswap-hooks/src/"
 ]
+
+[rpc_endpoints]
+localhost = "http://localhost:8545"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
