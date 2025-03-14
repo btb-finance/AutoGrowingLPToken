@@ -1,0 +1,39 @@
+node_modules
+.env
+
+# Hardhat files
+/cache
+/artifacts
+
+# TypeChain files
+/typechain
+/typechain-types
+
+# solidity-coverage files
+/coverage
+/coverage.json
+
+# Hardhat Ignition default folder for deployments against a local node
+ignition/deployments/chain-31337
+.DS_Store
+
+# Foundry files
+/out
+/cache_forge
+/broadcast
+/lib
+
+# Editor files
+*.swp
+*.swo
+.vscode/
+
+# Sensitive information
+*.private
+*private*.txt
+*secret*.txt
+*key*.txt
+*password*.txt
+
+# Deployment artifacts
+cache/
